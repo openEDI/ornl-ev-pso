@@ -14,17 +14,3 @@ EV Charging  use case for OEDISI
 | Battery capacity | 50 kWh |
 | PSO | 30 particles, 30 iterations |
 
-## Data Flow
-
-```
-feeder ──powers_real──────→ evcs
-feeder ──powers_imag──────→ evcs
-feeder ──topology─────────→ evcs
-feeder ──voltages_real────→ evcs
-feeder ──voltages_imag────→ evcs
-evcs   ──ev_load_real─────→ feeder
-evcs   ──ev_load_imag─────→ feeder
-feeder ──powers_real──────→ recorder_power_real
-feeder ──powers_imag──────→ recorder_power_imag
-feeder ──voltages_magnitude→ recorder_voltage_magnitude
-```
