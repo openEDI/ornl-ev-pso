@@ -1,0 +1,7 @@
+helics>=3.4.0
+pydantic
+oedisi~=3.0
+numpy
+scipy
+fastapi
+uvicorn

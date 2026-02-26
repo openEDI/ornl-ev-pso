@@ -1,0 +1,38 @@
+{
+    "directory": "evcs_federate",
+    "execute_function": "python run_federate.py",
+    "static_inputs": [
+        {"type": "", "port_id": "evcs_bus", "description": "List of bus IDs for EVCS locations", "unit": ""},
+        {"type": "", "port_id": "evcs_bus_assignment", "description": "Mapping of bus IDs to EV indices", "unit": ""},
+        {"type": "", "port_id": "num_evs_per_station", "description": "Number of EVs per charging station", "unit": ""},
+        {"type": "", "port_id": "max_charging_rate", "description": "Maximum charging rate per EV", "unit": "kW"},
+        {"type": "", "port_id": "battery_capacity", "description": "EV battery capacity", "unit": "kWh"},
+        {"type": "", "port_id": "charging_efficiency", "description": "Charging efficiency (0-1)", "unit": ""},
+        {"type": "", "port_id": "desired_soc", "description": "Target state of charge (0-1)", "unit": ""},
+        {"type": "", "port_id": "soc_mean", "description": "Initial SOC distribution mean", "unit": ""},
+        {"type": "", "port_id": "soc_std", "description": "Initial SOC distribution std dev", "unit": ""},
+        {"type": "", "port_id": "soc_lower", "description": "Initial SOC lower bound", "unit": ""},
+        {"type": "", "port_id": "soc_upper", "description": "Initial SOC upper bound", "unit": ""},
+        {"type": "", "port_id": "arrival_mean", "description": "Arrival time distribution mean (hours)", "unit": "hours"},
+        {"type": "", "port_id": "arrival_std", "description": "Arrival time distribution std dev", "unit": "hours"},
+        {"type": "", "port_id": "arrival_lower", "description": "Earliest arrival time", "unit": "hours"},
+        {"type": "", "port_id": "arrival_upper", "description": "Latest arrival time", "unit": "hours"},
+        {"type": "", "port_id": "departure_shift", "description": "Departure time shift parameter", "unit": "hours"},
+        {"type": "", "port_id": "departure_mu", "description": "Departure lognormal mu parameter", "unit": ""},
+        {"type": "", "port_id": "departure_sigma", "description": "Departure lognormal sigma parameter", "unit": ""},
+        {"type": "", "port_id": "total_hours", "description": "Simulation duration", "unit": "hours"},
+        {"type": "", "port_id": "control_interval", "description": "Control time interval", "unit": "hours"},
+        {"type": "", "port_id": "random_seed", "description": "Random seed for reproducibility", "unit": ""}
+    ],
+    "dynamic_inputs": [
+        {"type": "PowersReal", "port_id": "powers_real_in", "description": "Real power from feeder", "unit": "kW"},
+        {"type": "PowersImaginary", "port_id": "powers_imag_in", "description": "Imaginary power from feeder", "unit": "kVAR"},
+        {"type": "Topology", "port_id": "topology", "description": "Network topology for linearized model", "unit": ""},
+        {"type": "VoltagesReal", "port_id": "voltages_real", "description": "Real voltages from feeder for voltage estimation", "unit": "pu"},
+        {"type": "VoltagesImaginary", "port_id": "voltages_imag", "description": "Imaginary voltages from feeder for voltage estimation", "unit": "pu"}
+    ],
+    "dynamic_outputs": [
+        {"type": "PowersReal", "port_id": "ev_load_real", "description": "EV charging real power load", "unit": "kW"},
+        {"type": "PowersImaginary", "port_id": "ev_load_imag", "description": "EV charging imaginary power load", "unit": "kVAR"}
+    ]
+}

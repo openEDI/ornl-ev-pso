@@ -1,0 +1,30 @@
+{
+    "directory": "LocalFeeder",
+    "execute_function": "python run_federate.py",
+    "static_inputs": [
+        {"type": "", "port_id": "feeder_file", "description": "Path to OpenDSS feeder model", "unit": ""},
+        {"type": "", "port_id": "start_date", "description": "Simulation start date", "unit": ""},
+        {"type": "", "port_id": "run_freq_sec", "description": "Simulation time step frequency", "unit": "seconds"},
+        {"type": "", "port_id": "number_of_timesteps", "description": "Total number of simulation timesteps", "unit": ""},
+        {"type": "", "port_id": "start_time_index", "description": "Starting time index", "unit": ""},
+        {"type": "", "port_id": "tap_setting", "description": "Transformer tap setting", "unit": ""}
+    ],
+    "dynamic_inputs": [
+        {"type": "", "port_id": "pv_set", "optional": true, "description": "PV setpoint values", "unit": "kW"},
+        {"type": "CommandList", "port_id": "change_commands", "optional": true, "description": "OpenDSS change commands", "unit": ""},
+        {"type": "InverterControlList", "port_id": "inv_control", "optional": true, "description": "Inverter control settings", "unit": ""},
+        {"type": "PowersReal", "port_id": "ev_load_real", "optional": true, "description": "EV charging real power load", "unit": "kW"},
+        {"type": "PowersImaginary", "port_id": "ev_load_imag", "optional": true, "description": "EV charging reactive power load", "unit": "kVAR"}
+    ],
+    "dynamic_outputs": [
+        {"type": "VoltagesMagnitude", "port_id": "voltages_magnitude", "description": "Voltage magnitudes at all buses", "unit": "pu"},
+        {"type": "VoltagesReal", "port_id": "voltages_real", "description": "Real voltage components", "unit": "V"},
+        {"type": "VoltagesImaginary", "port_id": "voltages_imag", "description": "Imaginary voltage components", "unit": "V"},
+        {"type": "PowersReal", "port_id": "powers_real", "description": "Real power at all nodes", "unit": "kW"},
+        {"type": "PowersImaginary", "port_id": "powers_imag", "description": "Reactive power at all nodes", "unit": "kVAR"},
+        {"type": "Topology", "port_id": "topology", "description": "Network topology information", "unit": ""},
+        {"type": "Injection", "port_id": "injections", "description": "Power injection data", "unit": ""},
+        {"type": "", "port_id": "load_y_matrix", "description": "Load admittance matrix", "unit": ""},
+        {"type": "PowersReal", "port_id": "available_power", "description": "Available power capacity", "unit": "kW"}
+    ]
+}

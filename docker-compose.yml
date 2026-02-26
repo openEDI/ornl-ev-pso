@@ -1,0 +1,84 @@
+networks:
+  custom-network:
+    driver: bridge
+    ipam:
+      config:
+      - gateway: 10.5.0.1
+        subnet: 10.5.0.0/16
+
+services:
+  oedisi_broker:
+    build:
+      context: ./broker
+    environment:
+      PORT: '8766'
+    hostname: broker
+    networks:
+      custom-network: {}
+    ports:
+    - 8766:8766
+
+  oedisi_feeder:
+    build:
+      context: ./LocalFeeder
+    environment:
+      PORT: '5678'
+    hostname: feeder
+    networks:
+      custom-network: {}
+    ports:
+    - 5678:5678
+    depends_on:
+    - oedisi_broker
+
+  oedisi_evcs:
+    build:
+      context: ./evcs_federate
+    environment:
+      PORT: '5683'
+    hostname: evcs
+    networks:
+      custom-network: {}
+    ports:
+    - 5683:5683
+    depends_on:
+    - oedisi_broker
+
+  oedisi_recorder_power_real:
+    build:
+      context: ./recorder
+    environment:
+      PORT: '5680'
+    hostname: recorder-power-real
+    networks:
+      custom-network: {}
+    ports:
+    - 5680:5680
+    depends_on:
+    - oedisi_broker
+
+  oedisi_recorder_power_imag:
+    build:
+      context: ./recorder
+    environment:
+      PORT: '5681'
+    hostname: recorder-power-imag
+    networks:
+      custom-network: {}
+    ports:
+    - 5681:5681
+    depends_on:
+    - oedisi_broker
+
+  oedisi_recorder_voltage_magnitude:
+    build:
+      context: ./recorder
+    environment:
+      PORT: '5682'
+    hostname: recorder-voltage-magnitude
+    networks:
+      custom-network: {}
+    ports:
+    - 5682:5682
+    depends_on:
+    - oedisi_broker

@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "broker"
+version = "0.1.0"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "openEDI" }]
+dependencies = [
+    "helics>=3.4.0",
+    "fastapi",
+    "uvicorn",
+    "oedisi~=3.0",
+    "httpx",
+    "requests",
+    "python-multipart",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-cov", "pytest-asyncio", "httpx", "mypy", "black", "isort"]
+
+[project.scripts]
+broker-server = "broker.server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["broker*"]
+exclude = ["tests*"]
