@@ -1,7 +1,0 @@
-{
-    "directory": "broker",
-    "execute_function": "helics_broker -f 5 --loglevel=warning",
-    "static_inputs": [],
-    "dynamic_inputs": [],
-    "dynamic_outputs": []
-}

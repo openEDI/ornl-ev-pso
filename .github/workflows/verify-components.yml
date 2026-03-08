@@ -1,0 +1,12 @@
+name: Verify Components
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify-components:
+    uses: openEDI/oedisi-example/.github/workflows/reusable_verify_components.yml@al/restructed
+    with:
+      component-root: "."

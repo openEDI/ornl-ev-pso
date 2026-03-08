@@ -1,0 +1,12 @@
+name: Verify Dockerfiles
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify-dockerfiles:
+    uses: openEDI/oedisi-example/.github/workflows/reusable_verify_dockerfiles.yml@al/restructed
+    with:
+      component-root: "."

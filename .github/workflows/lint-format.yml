@@ -1,0 +1,12 @@
+name: Lint and Format
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint-format:
+    uses: openEDI/oedisi-example/.github/workflows/reusable_lint_format.yml@al/restructed
+    with:
+      python-version: "3.10"
