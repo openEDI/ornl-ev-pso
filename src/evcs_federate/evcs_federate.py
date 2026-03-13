@@ -192,13 +192,12 @@ class EVCSFederate:
 
             if not network_built and self.sub_topology.is_updated():
                 try:
-                    topology = Topology.parse_obj(self.sub_topology.json)
+                    topology = Topology.model_validate(self.sub_topology.json)
                     logger.info("Received topology from feeder")
 
-                    # IEEE 123-bus base voltage is 2400V L-N
-                    V_BASE = 2400.0
                     base_volt_raw = np.array(topology.base_voltage_magnitudes.values)
-                    base_volt_pu = base_volt_raw / V_BASE
+                    self._topology_base_voltages = base_volt_raw
+                    base_volt_pu = np.ones_like(base_volt_raw)
 
                     self.network = LinearizedNetwork(
                         bus_ids=list(topology.base_voltage_magnitudes.ids),
@@ -217,11 +216,13 @@ class EVCSFederate:
             base_voltages = None
             if self.sub_voltages_real.is_updated():
                 try:
-                    voltages_real = VoltagesReal.parse_obj(self.sub_voltages_real.json)
-                    # IEEE 123-bus base voltage is 2400V L-N
-                    V_BASE = 2400.0
+                    voltages_real = VoltagesReal.model_validate(self.sub_voltages_real.json)
                     voltages_raw = np.array(voltages_real.values)
-                    base_voltages = voltages_raw / V_BASE
+                    if hasattr(self, "_topology_base_voltages") and self._topology_base_voltages is not None:
+                        base_voltages = voltages_raw / self._topology_base_voltages
+                    else:
+                        v_base = np.median(voltages_raw)
+                        base_voltages = voltages_raw / v_base if v_base > 0 else voltages_raw
                     logger.info(
                         f"Received {len(base_voltages)} voltages from feeder (converted to pu)"
                     )
@@ -234,8 +235,8 @@ class EVCSFederate:
                 else:
                     base_voltages = np.ones(100)
 
-            power_P = PowersReal.parse_obj(self.sub_power_P.json)
-            power_Q = PowersImaginary.parse_obj(self.sub_power_Q.json)
+            power_P = PowersReal.model_validate(self.sub_power_P.json)
+            power_Q = PowersImaginary.model_validate(self.sub_power_Q.json)
 
             load_ids = list(power_P.ids)
             logger.info(f"[INPUT] Received feeder data: {len(load_ids)} load buses")
