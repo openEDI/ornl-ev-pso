@@ -30,7 +30,7 @@ dependencies = [
     "scipy",
     "fastapi",
     "uvicorn",
-    "oedisi~=3.0",
+    "oedisi @ git+https://github.com/openEDI/oedisi.git@main",
 ]
 
 [project.optional-dependencies]

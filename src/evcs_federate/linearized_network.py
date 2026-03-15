@@ -1,11 +1,9 @@
-"""fast voltage estimation during PSO."""
+"""Fast voltage estimation during PSO."""
 
 import logging
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 
 import numpy as np
-from scipy.sparse import csr_matrix, lil_matrix
-from scipy.sparse.linalg import spsolve
 
 logger = logging.getLogger(__name__)
 
@@ -185,8 +183,8 @@ if __name__ == "__main__":
 
     estimated = network.estimate_voltages(base_voltages, ev_loads)
 
-    print(f"Base voltages (sample): {base_voltages[:5]}")
-    print(f"Estimated voltages (sample): {estimated[:5]}")
+    logger.info(f"Base voltages (sample): {base_voltages[:5]}")
+    logger.info(f"Estimated voltages (sample): {estimated[:5]}")
 
     violations = network.get_voltage_violations(estimated)
-    print(f"Violations: {violations}")
+    logger.info(f"Violations: {violations}")

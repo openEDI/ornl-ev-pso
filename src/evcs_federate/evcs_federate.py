@@ -2,6 +2,7 @@
 
 import json
 import logging
+import time as time_module
 from datetime import datetime
 
 import helics as h
@@ -175,8 +176,6 @@ class EVCSFederate:
         timestep_count = 0
         network_built = False
 
-        import time as time_module
-
         while granted_time < h.HELICS_TIME_MAXTIME:
             if not self.sub_power_P.is_updated():
                 granted_time = h.helicsFederateRequestTime(
@@ -334,7 +333,7 @@ class EVCSFederate:
 
 
 def run_simulator(broker_config: BrokerConfig):
-    logger.info(f"Running---------------------------------------------------")
+    logger.info("Starting run_simulator")
     with open("static_inputs.json") as f:
         config = json.load(f)
         federate_name = config["name"]
@@ -367,7 +366,7 @@ def run_simulator(broker_config: BrokerConfig):
         return
 
     sfed.run()
-    logger.info(f"Running------------------------------------------------")
+    logger.info("run_simulator complete")
 
 
 if __name__ == "__main__":
