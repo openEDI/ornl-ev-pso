@@ -215,13 +215,20 @@ class EVCSFederate:
             base_voltages = None
             if self.sub_voltages_real.is_updated():
                 try:
-                    voltages_real = VoltagesReal.model_validate(self.sub_voltages_real.json)
+                    voltages_real = VoltagesReal.model_validate(
+                        self.sub_voltages_real.json
+                    )
                     voltages_raw = np.array(voltages_real.values)
-                    if hasattr(self, "_topology_base_voltages") and self._topology_base_voltages is not None:
+                    if (
+                        hasattr(self, "_topology_base_voltages")
+                        and self._topology_base_voltages is not None
+                    ):
                         base_voltages = voltages_raw / self._topology_base_voltages
                     else:
                         v_base = np.median(voltages_raw)
-                        base_voltages = voltages_raw / v_base if v_base > 0 else voltages_raw
+                        base_voltages = (
+                            voltages_raw / v_base if v_base > 0 else voltages_raw
+                        )
                     logger.info(
                         f"Received {len(base_voltages)} voltages from feeder (converted to pu)"
                     )
