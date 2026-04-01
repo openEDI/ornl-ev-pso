@@ -1,0 +1,7 @@
+{
+    "powers_real_in": "feeder/powers_real",
+    "powers_imag_in": "feeder/powers_imag",
+    "topology": "feeder/topology",
+    "voltages_real": "feeder/voltages_real",
+    "voltages_imag": "feeder/voltages_imag"
+}
