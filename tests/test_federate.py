@@ -102,12 +102,12 @@ def test_execute_function_format():
     with open(path) as f:
         data = json.load(f)
     exec_fn = data["execute_function"]
-    assert not exec_fn.startswith("python -m src."), (
-        f"execute_function should not have 'src.' prefix, got: {exec_fn}"
-    )
-    assert "evcs_federate" in exec_fn, (
-        f"execute_function should reference evcs_federate module, got: {exec_fn}"
-    )
+    assert not exec_fn.startswith(
+        "python -m src."
+    ), f"execute_function should not have 'src.' prefix, got: {exec_fn}"
+    assert (
+        "evcs_federate" in exec_fn
+    ), f"execute_function should reference evcs_federate module, got: {exec_fn}"
 
 
 def test_federate_lifecycle():
