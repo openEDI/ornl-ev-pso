@@ -73,9 +73,15 @@ def test_component_definition_json_valid():
     assert os.path.exists(path), f"component_definition.json not found at {path}"
     with open(path) as f:
         data = json.load(f)
-    assert "execute_function" in data, "component_definition.json missing 'execute_function'"
-    assert "dynamic_inputs" in data, "component_definition.json missing 'dynamic_inputs'"
-    assert "dynamic_outputs" in data, "component_definition.json missing 'dynamic_outputs'"
+    assert (
+        "execute_function" in data
+    ), "component_definition.json missing 'execute_function'"
+    assert (
+        "dynamic_inputs" in data
+    ), "component_definition.json missing 'dynamic_inputs'"
+    assert (
+        "dynamic_outputs" in data
+    ), "component_definition.json missing 'dynamic_outputs'"
 
     input_port_ids = {p["port_id"] for p in data["dynamic_inputs"]}
     assert "powers_real_in" in input_port_ids
@@ -91,9 +97,9 @@ def test_component_definition_no_directory_key():
     path = os.path.join(_repo_root(), "component_definition.json")
     with open(path) as f:
         data = json.load(f)
-    assert "directory" not in data, (
-        "component_definition.json must not have 'directory' key (single-component pattern)"
-    )
+    assert (
+        "directory" not in data
+    ), "component_definition.json must not have 'directory' key (single-component pattern)"
 
 
 def test_execute_function_format():

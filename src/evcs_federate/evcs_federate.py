@@ -171,7 +171,7 @@ class EVCSFederate:
     def simulate(self, num_timesteps=None):
         """Lifecycle test: run finite timesteps without requiring real data.
 
-            skips algorithm if no data is received.
+        skips algorithm if no data is received.
         """
         if num_timesteps is None:
             num_timesteps = 4
@@ -186,9 +186,7 @@ class EVCSFederate:
                 logger.info(f"Timestep {granted_time}: data received")
             else:
                 logger.info(f"Timestep {granted_time}: no data (lifecycle test)")
-            granted_time = h.helicsFederateRequestTime(
-                self.vfed, granted_time + 1
-            )
+            granted_time = h.helicsFederateRequestTime(self.vfed, granted_time + 1)
 
         logger.info("Completed simulation")
 
