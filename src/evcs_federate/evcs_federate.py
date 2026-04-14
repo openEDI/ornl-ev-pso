@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
 logger.setLevel(logging.INFO)
 
-# 3-phase buses in gadal_ieee123 use S{num} load names (no phase suffix)
+# 3-phase buses in ieee123 use S{num} load names (no phase suffix)
 THREE_PHASE_BUSES = {"47", "48"}
 
 
@@ -99,10 +99,16 @@ class EVCSFederate:
         evcs_bus: list = None,
         ev_params: dict = None,
         control_mode: str = "dopf",
+        test_mode: bool = False,
     ):
-        "Initializes federate with name and remaps input into subscriptions"
+        """Initialize federate with name and remaps input into subscriptions.
+
+        test_mode : bool
+            If True, starts a local HELICS broker for standalone testing
+        """
         self.evcs_bus = evcs_bus if evcs_bus is not None else ["48.1"]
         self.control_mode = control_mode
+        self.broker = None
         logger.info(f"EVCS bus location(s): {self.evcs_bus}")
         logger.info(f"Control mode: {self.control_mode}")
 
@@ -112,6 +118,9 @@ class EVCSFederate:
                 f"Loaded EV config: {ev_params['num_evs']} EVs, "
                 f"{ev_params['num_control_steps']} control steps"
             )
+
+        if test_mode:
+            self.start_broker(1)
 
         deltat = 1
 
@@ -150,6 +159,42 @@ class EVCSFederate:
         )
 
         self.network = None
+
+    def start_broker(self, n_federates=1):
+        """Start a local HELICS broker for standalone test."""
+        logger.info("Starting local HELICS broker (test mode)")
+        initstring = f"-f {n_federates} --name=mainbroker"
+        self.broker = h.helicsCreateBroker("zmq", "", initstring)
+        assert h.helicsBrokerIsConnected(self.broker) == 1, "Broker connection failed"
+        logger.info("Local broker created")
+
+    def simulate(self, num_timesteps=None):
+        """Lifecycle test: run finite timesteps without requiring real data.
+
+        skips algorithm if no data is received.
+        """
+        if num_timesteps is None:
+            num_timesteps = 4
+        self.vfed.enter_executing_mode()
+        logger.info("Entered execution mode (simulate)")
+
+        granted_time = 0
+        granted_time = h.helicsFederateRequestTime(self.vfed, granted_time)
+
+        while granted_time < num_timesteps:
+            if self.sub_power_P.is_updated():
+                logger.info(f"Timestep {granted_time}: data received")
+            else:
+                logger.info(f"Timestep {granted_time}: no data (lifecycle test)")
+            granted_time = h.helicsFederateRequestTime(self.vfed, granted_time + 1)
+
+        logger.info("Completed simulation")
+
+    def finalize(self):
+        h.helicsFederateDisconnect(self.vfed)
+        h.helicsFederateFree(self.vfed)
+        h.helicsCloseLibrary()
+        logger.info("Federate finalized")
 
     def run(self):
         """Main run loop: build LinearizedNetwork from topology, then run PSO each timestep."""

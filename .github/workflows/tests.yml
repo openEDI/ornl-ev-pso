@@ -26,4 +26,4 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run unit tests
-        run: pytest -q tests
+        run: pytest --cov=evcs_federate tests/
