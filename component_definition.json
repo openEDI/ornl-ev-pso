@@ -1,4 +1,5 @@
 {
+    "directory": "evcs_federate",
     "execute_function": "python -m evcs_federate.evcs_federate",
     "static_inputs": [
         {"type": "", "port_id": "evcs_bus", "description": "List of bus IDs for EVCS locations", "unit": ""},
