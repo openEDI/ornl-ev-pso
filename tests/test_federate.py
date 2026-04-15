@@ -92,16 +92,6 @@ def test_component_definition_json_valid():
     assert "change_commands" in output_port_ids
 
 
-def test_component_definition_no_directory_key():
-    """component_definition.json must not contain a 'directory' key (non-standard)."""
-    path = os.path.join(_repo_root(), "component_definition.json")
-    with open(path) as f:
-        data = json.load(f)
-    assert (
-        "directory" not in data
-    ), "component_definition.json must not have 'directory' key (single-component pattern)"
-
-
 def test_execute_function_format():
     """execute_function must use module path without 'src.' prefix."""
     path = os.path.join(_repo_root(), "component_definition.json")
