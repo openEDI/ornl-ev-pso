@@ -1,0 +1,35 @@
+{
+  "title": "ComponentParameters",
+  "type": "object",
+  "properties": {
+    "evcs_bus":             { "title": "EVCS Bus",             "type": "array",   "items": { "type": "string"  } },
+    "evcs_bus_assignment":  { "title": "EVCS Bus Assignment",  "type": "object"  },
+    "num_evs_per_station":  { "title": "Num EVs per Station",  "type": "array",   "items": { "type": "integer" } },
+    "max_charging_rate":    { "title": "Max Charging Rate",    "type": "number"  },
+    "battery_capacity":     { "title": "Battery Capacity",     "type": "number"  },
+    "charging_efficiency":  { "title": "Charging Efficiency",  "type": "number"  },
+    "desired_soc":          { "title": "Desired SOC",          "type": "number"  },
+    "soc_mean":             { "title": "SOC Mean",             "type": "number"  },
+    "soc_std":              { "title": "SOC Std",              "type": "number"  },
+    "soc_lower":            { "title": "SOC Lower",            "type": "number"  },
+    "soc_upper":            { "title": "SOC Upper",            "type": "number"  },
+    "arrival_mean":         { "title": "Arrival Mean",         "type": "number"  },
+    "arrival_std":          { "title": "Arrival Std",          "type": "number"  },
+    "arrival_lower":        { "title": "Arrival Lower",        "type": "number"  },
+    "arrival_upper":        { "title": "Arrival Upper",        "type": "number"  },
+    "departure_shift":      { "title": "Departure Shift",      "type": "number"  },
+    "departure_mu":         { "title": "Departure Mu",         "type": "number"  },
+    "departure_sigma":      { "title": "Departure Sigma",      "type": "number"  },
+    "total_hours":          { "title": "Total Hours",          "type": "number"  },
+    "control_interval":     { "title": "Control Interval",     "type": "number"  },
+    "random_seed":          { "title": "Random Seed",          "type": "integer" }
+  },
+  "required": [
+    "evcs_bus", "evcs_bus_assignment", "num_evs_per_station",
+    "max_charging_rate", "battery_capacity", "charging_efficiency",
+    "desired_soc", "soc_mean", "soc_std", "soc_lower", "soc_upper",
+    "arrival_mean", "arrival_std", "arrival_lower", "arrival_upper",
+    "departure_shift", "departure_mu", "departure_sigma",
+    "total_hours", "control_interval", "random_seed"
+  ]
+}
