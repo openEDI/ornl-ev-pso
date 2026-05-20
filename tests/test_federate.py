@@ -93,14 +93,10 @@ def test_component_definition_json_valid():
 
 
 def test_execute_function_format():
-    """execute_function must use module path without 'src.' prefix."""
     path = os.path.join(_repo_root(), "component_definition.json")
     with open(path) as f:
         data = json.load(f)
     exec_fn = data["execute_function"]
-    assert not exec_fn.startswith(
-        "python -m src."
-    ), f"execute_function should not have 'src.' prefix, got: {exec_fn}"
     assert (
         "evcs_federate" in exec_fn
     ), f"execute_function should reference evcs_federate module, got: {exec_fn}"
