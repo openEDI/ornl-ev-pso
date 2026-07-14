@@ -22,7 +22,8 @@
         {"type": "", "port_id": "departure_sigma", "description": "Departure lognormal sigma parameter", "unit": ""},
         {"type": "", "port_id": "total_hours", "description": "Simulation duration", "unit": "hours"},
         {"type": "", "port_id": "control_interval", "description": "Control time interval", "unit": "hours"},
-        {"type": "", "port_id": "random_seed", "description": "Random seed for reproducibility", "unit": ""}
+        {"type": "", "port_id": "random_seed", "description": "Random seed for reproducibility", "unit": ""},
+        {"type": "", "port_id": "control_mode", "description": "Charging control mode: dopf (PSO-optimized) or uncontrolled (greedy baseline)", "unit": ""}
     ],
     "dynamic_inputs": [
         {"type": "PowersReal", "port_id": "powers_real_in", "description": "Real power from feeder", "unit": "kW"},

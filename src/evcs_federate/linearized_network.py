@@ -106,6 +106,97 @@ class LinearizedNetwork:
         logger.info(f"Sensitivity matrix computed: {n}x{n}")
         logger.debug(f"Sample dV/dP diagonal: {np.diag(self.dV_dP)[:5]}")
 
+    def _assemble_admittance(self, admittance):
+        if hasattr(admittance, "admittance_matrix") and hasattr(admittance, "ids"):
+            ids = list(admittance.ids)
+            mat = admittance.admittance_matrix
+            n = len(ids)
+            Y = np.zeros((n, n), dtype=complex)
+            for i in range(n):
+                row = mat[i]
+                for j in range(n):
+                    re, im = row[j]
+                    Y[i, j] = complex(re, im)
+            return ids, Y
+
+        if hasattr(admittance, "from_equipment") and hasattr(
+            admittance, "admittance_list"
+        ):
+            from_eq = list(admittance.from_equipment)
+            to_eq = list(admittance.to_equipment)
+            vals = list(admittance.admittance_list)
+            ids = sorted(set(from_eq) | set(to_eq))
+            pos = {bid: k for k, bid in enumerate(ids)}
+            n = len(ids)
+            Y = np.zeros((n, n), dtype=complex)
+            for f, t, v in zip(from_eq, to_eq, vals):
+                re, im = v
+                Y[pos[f], pos[t]] += complex(re, im)
+            return ids, Y
+
+        raise ValueError("Unrecognized admittance format")
+
+    def build_sensitivity_from_admittance(
+        self, topology, s_base: float = 1e6, diagonal_only: bool = False,
+        sensitivity_scale: float = 1.0
+    ):
+        admittance = topology.admittance
+        bvm = topology.base_voltage_magnitudes
+        base_v_by_id = dict(zip(bvm.ids, bvm.values))
+
+        adm_ids, Y = self._assemble_admittance(admittance)
+        n_adm = len(adm_ids)
+        if n_adm == 0:
+            raise ValueError("Empty admittance matrix")
+
+        base_v = np.array(
+            [base_v_by_id.get(bid, 0.0) for bid in adm_ids], dtype=float
+        )
+        if np.any(base_v <= 0.0):
+            raise ValueError("Missing base voltage for one or more admittance ids")
+
+        Y_pu = Y * (np.outer(base_v, base_v) / float(s_base))
+
+        slack_ids = set(topology.slack_bus) if topology.slack_bus else set()
+        keep = [i for i, bid in enumerate(adm_ids) if bid not in slack_ids]
+        if len(keep) < 2:
+            raise ValueError("Not enough non-slack buses in admittance")
+
+        Y_red = Y_pu[np.ix_(keep, keep)]
+        Z_red = np.linalg.inv(Y_red)
+        dVdP_red = -np.real(Z_red)
+        dVdQ_red = -np.imag(Z_red)
+
+        red_pos = {adm_ids[keep[k]]: k for k in range(len(keep))}
+
+        n = self.n_buses
+        full_dVdP = np.zeros((n, n))
+        full_dVdQ = np.zeros((n, n))
+        for i, bus_i in enumerate(self.bus_ids):
+            pi = red_pos.get(bus_i)
+            if pi is None:
+                continue
+            for j, bus_j in enumerate(self.bus_ids):
+                pj = red_pos.get(bus_j)
+                if pj is None:
+                    continue
+                full_dVdP[i, j] = dVdP_red[pi, pj]
+                full_dVdQ[i, j] = dVdQ_red[pi, pj]
+
+        if sensitivity_scale != 1.0:
+            full_dVdP = full_dVdP * sensitivity_scale
+            full_dVdQ = full_dVdQ * sensitivity_scale
+        if diagonal_only:
+            full_dVdP = np.diag(np.diag(full_dVdP))
+            full_dVdQ = np.diag(np.diag(full_dVdQ))
+        self.dV_dP = full_dVdP
+        self.dV_dQ = full_dVdQ
+        logger.info(
+            f"Built Zbus dV/dP sensitivity from admittance: {n}x{n} "
+            f"({len(keep)} non-slack of {n_adm} admittance nodes, "
+            f"diagonal_only={diagonal_only})"
+        )
+
     def estimate_voltages(
         self, base_voltages: np.ndarray, ev_loads_per_bus: Dict[str, float]
     ) -> np.ndarray:
@@ -115,10 +206,13 @@ class LinearizedNetwork:
             return base_voltages.copy()
 
         delta_P = np.zeros(self.n_buses)
+        if getattr(self, "_lower_idx_n", -1) != len(self.bus_to_idx):
+            self._lower_idx = {str(k).lower(): v for k, v in self.bus_to_idx.items()}
+            self._lower_idx_n = len(self.bus_to_idx)
         for bus_id, load_kw in ev_loads_per_bus.items():
-            if bus_id in self.bus_to_idx:
-                idx = self.bus_to_idx[bus_id]
-                delta_P[idx] = load_kw / 1000.0  # kW -> per-unit on 1 MVA base
+            idx = self._lower_idx.get(str(bus_id).lower())
+            if idx is not None:
+                delta_P[idx] = load_kw / 1000.0
 
         delta_V = self.dV_dP @ delta_P
         return base_voltages + delta_V
