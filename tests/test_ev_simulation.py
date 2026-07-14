@@ -11,7 +11,7 @@ from evcs_federate.ev_simulation import (
     simulate_real_charging_process,
     uncontrolled_charging,
 )
-from evcs_federate.evcs_federate import build_change_commands, bus_id_to_load_name
+from evcs_federate.evcs_federate import build_change_commands
 
 
 def test_uncontrolled_charging():
@@ -35,9 +35,7 @@ def test_uncontrolled_charging():
     )
     assert soc.shape == (num_evs, num_steps)
     assert rate.shape == (num_evs, num_steps)
-    # All EVs should charge (rate > 0 at some point)
     assert np.any(rate > 0)
-    # Rate should be zero before arrival
     for ev in range(num_evs):
         assert np.all(rate[ev, : arrival_idx[ev]] == 0)
 
@@ -69,72 +67,40 @@ def test_simulate_real_charging_no_overcharge():
         np.array([10]),
         num_evs,
     )
-    # SOC should never exceed 1.0
     assert np.all(soc <= 1.0 + 1e-6)
 
 
-def test_bus_id_to_load_name():
-    # 3-phase buses (47, 48) use S{num} without phase suffix
-    assert bus_id_to_load_name("48.1") == "S48"
-    assert bus_id_to_load_name("47.1") == "S47"
-    # Single-phase buses use S{num}{phase_letter}
-    assert bus_id_to_load_name("65.1") == "S65a"
-    assert bus_id_to_load_name("65.2") == "S65b"
-    assert bus_id_to_load_name("76.3") == "S76c"
-
-
-def test_build_change_commands_additive():
-    """With base load, kW should be base + ev."""
+def test_build_change_commands_sets_ev_load():
+    """Each bus gets a kW command with its EV load and a kvar=0 command."""
     buses = ["48.1", "65.1"]
     ev_load = [50.0, 30.0]
-    base_kw = {"48.1": 70.0, "65.1": 35.0}
 
-    cmd_list = build_change_commands(buses, ev_load, base_kw)
+    cmd_list = build_change_commands(buses, ev_load)
 
-    assert len(cmd_list.root) == 4  # 2 commands per bus
-    # Bus 48.1: base=70 + ev=50 = 120
-    assert cmd_list.root[0].obj_name == "Load.S48"
+    assert len(cmd_list.root) == 4  # kW + kvar per bus
+    assert cmd_list.root[0].obj_name == "48.1"
     assert cmd_list.root[0].obj_property == "kW"
-    assert cmd_list.root[0].val == "120.0"
+    assert cmd_list.root[0].val == "50.0"
+    assert cmd_list.root[1].obj_name == "48.1"
     assert cmd_list.root[1].obj_property == "kvar"
-    # Bus 65.1: base=35 + ev=30 = 65
-    assert cmd_list.root[2].obj_name == "Load.S65a"
-    assert cmd_list.root[2].val == "65.0"
-
-    # Serializes to valid JSON
-    parsed = json.loads(cmd_list.model_dump_json())
-    assert isinstance(parsed, list)
-    assert len(parsed) == 4
+    assert cmd_list.root[1].val == "0.0"
+    assert cmd_list.root[2].obj_name == "65.1"
+    assert cmd_list.root[2].val == "30.0"
 
 
 def test_build_change_commands_zero_ev():
-    """With zero EV load, kW should equal base load."""
-    buses = ["65.1"]
-    ev_load = [0.0]
-    base_kw = {"65.1": 35.0}
-
-    cmd_list = build_change_commands(buses, ev_load, base_kw)
-    assert cmd_list.root[0].val == "35.0"
-
-
-def test_build_change_commands_no_base():
-    """Without base load info, kW should be just EV power."""
-    buses = ["76.1"]
-    ev_load = [50.0]
-
-    cmd_list = build_change_commands(buses, ev_load)
-    assert cmd_list.root[0].obj_name == "Load.S76a"
-    assert cmd_list.root[0].val == "50.0"
+    """Zero EV load still emits a kW=0 command for that bus."""
+    cmd_list = build_change_commands(["65.1"], [0.0])
+    assert cmd_list.root[0].obj_property == "kW"
+    assert cmd_list.root[0].val == "0.0"
 
 
 def test_build_change_commands_serialization():
-    """CommandList serializes to valid JSON array."""
+    """CommandList serializes to a valid JSON array, 2 commands per bus."""
     buses = ["48.1", "65.1", "76.1"]
     ev_load = [50.0, 30.0, 0.0]
-    base_kw = {"48.1": 70.0, "65.1": 35.0, "76.1": 105.0}
 
-    cmd_list = build_change_commands(buses, ev_load, base_kw)
-    json_str = cmd_list.model_dump_json()
-    parsed = json.loads(json_str)
+    cmd_list = build_change_commands(buses, ev_load)
+    parsed = json.loads(cmd_list.model_dump_json())
     assert isinstance(parsed, list)
-    assert len(parsed) == 6  # 2 per bus (kW + kvar)
+    assert len(parsed) == 6
