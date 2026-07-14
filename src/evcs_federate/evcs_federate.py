@@ -31,14 +31,14 @@ def build_change_commands(evcs_buses, ev_load_values):
     for bus, ev_kw in zip(evcs_buses, ev_load_values):
         commands.append(
             Command(
-                obj_name=bus,
+                obj_name=f"EVLoad.{bus}",
                 obj_property="kW",
                 val=str(ev_kw),
             )
         )
         commands.append(
             Command(
-                obj_name=bus,
+                obj_name=f"EVLoad.{bus}",
                 obj_property="kvar",
                 val="0.0",
             )
