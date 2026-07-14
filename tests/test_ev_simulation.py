@@ -78,13 +78,13 @@ def test_build_change_commands_sets_ev_load():
     cmd_list = build_change_commands(buses, ev_load)
 
     assert len(cmd_list.root) == 4  # kW + kvar per bus
-    assert cmd_list.root[0].obj_name == "48.1"
+    assert cmd_list.root[0].obj_name == "EVLoad.48.1"
     assert cmd_list.root[0].obj_property == "kW"
     assert cmd_list.root[0].val == "50.0"
-    assert cmd_list.root[1].obj_name == "48.1"
+    assert cmd_list.root[1].obj_name == "EVLoad.48.1"
     assert cmd_list.root[1].obj_property == "kvar"
     assert cmd_list.root[1].val == "0.0"
-    assert cmd_list.root[2].obj_name == "65.1"
+    assert cmd_list.root[2].obj_name == "EVLoad.65.1"
     assert cmd_list.root[2].val == "30.0"
 
 
