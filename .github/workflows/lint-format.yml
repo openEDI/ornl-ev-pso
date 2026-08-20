@@ -7,6 +7,6 @@ on:
 
 jobs:
   lint-format:
-    uses: openEDI/oedisi-example/.github/workflows/reusable_lint_format.yml@al/restructed
+    uses: openEDI/oedisi-components/.github/workflows/reusable_lint_format.yml@main
     with:
       python-version: "3.10"

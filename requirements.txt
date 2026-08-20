@@ -1,6 +1,6 @@
 helics>=3.4.0
 pydantic
-oedisi @ git+https://github.com/openEDI/oedisi.git@main
+oedisi~=3.0
 numpy
 scipy
 fastapi

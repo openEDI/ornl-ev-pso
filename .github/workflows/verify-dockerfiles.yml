@@ -7,6 +7,6 @@ on:
 
 jobs:
   verify-dockerfiles:
-    uses: openEDI/oedisi-example/.github/workflows/reusable_verify_dockerfiles.yml@al/restructed
+    uses: openEDI/oedisi-components/.github/workflows/reusable_verify_dockerfiles.yml@main
     with:
       component-root: "."
