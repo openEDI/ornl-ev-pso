@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
 logger.setLevel(logging.INFO)
 
+
 def build_change_commands(evcs_buses, ev_load_values):
     commands = []
     for bus, ev_kw in zip(evcs_buses, ev_load_values):
@@ -167,9 +168,7 @@ class EVCSFederate:
                 base_voltages = voltages_raw / self._topology_base_voltages
             else:
                 v_base = np.median(voltages_raw)
-                base_voltages = (
-                    voltages_raw / v_base if v_base > 0 else voltages_raw
-                )
+                base_voltages = voltages_raw / v_base if v_base > 0 else voltages_raw
             logger.info(
                 f"Received {len(base_voltages)} voltages from feeder (converted to pu)"
             )
@@ -203,7 +202,9 @@ class EVCSFederate:
             for k, vrv in vr_by_id.items():
                 bv = float(base_v_by_id.get(k, 0.0))
                 if bv > 0:
-                    all_bus_pu[k] = float(np.hypot(vrv, float(vi_by_id.get(k, 0.0))) / bv)
+                    all_bus_pu[k] = float(
+                        np.hypot(vrv, float(vi_by_id.get(k, 0.0))) / bv
+                    )
             if all_bus_pu:
                 self._all_bus_pu = all_bus_pu
             return base_voltages, True
@@ -265,27 +266,43 @@ class EVCSFederate:
         logger.info(f"max voltage (pu)    : {maxpu:.4f}")
         vcells = self._m_vcells
         viol_rate = (100.0 * (self._m_n_uv + self._m_n_ov) / vcells) if vcells else 0.0
-        logger.info(f"voltage violations  : {self._m_n_uv} undervolt, {self._m_n_ov} overvolt ({viol_rate:.2f}% of bus-steps)")
+        logger.info(
+            f"voltage violations  : {self._m_n_uv} undervolt, {self._m_n_ov} overvolt ({viol_rate:.2f}% of bus-steps)"
+        )
         logger.info(f"peak EV load (kW)   : {self._m_peak_ev:.1f}")
         logger.info(f"EV energy delivered : {deliv:.1f} kWh")
         logger.info(f"EV charging cost    : ${cd:.2f}")
         logger.info("----- BENEFITS vs uncontrolled baseline -----")
-        logger.info(f"COST REDUCTION      : ${cost_delta:.2f} ({cost_pct:.1f}%)  [${cd:.2f} with control vs ${cp:.2f} uncontrolled, TOU tariff]")
+        logger.info(
+            f"COST REDUCTION      : ${cost_delta:.2f} ({cost_pct:.1f}%)  [${cd:.2f} with control vs ${cp:.2f} uncontrolled, TOU tariff]"
+        )
         avg_pd = cd / deliv if deliv > 0 else 0.0
         avg_pp = cp / prop if prop > 0 else 0.0
-        logger.info(f"avg price paid      : ${avg_pd:.4f}/kWh with control vs ${avg_pp:.4f}/kWh uncontrolled")
+        logger.info(
+            f"avg price paid      : ${avg_pd:.4f}/kWh with control vs ${avg_pp:.4f}/kWh uncontrolled"
+        )
         lb = self._m_losskwh_base
         ld = self._m_losskwh_deliv
         if lb > 0.0:
             lpct = 100.0 * (lb - ld) / lb
-            logger.info(f"LOSS REDUCTION      : {lb - ld:.2f} kWh ({lpct:.1f}%)  [Zbus model estimate: {ld:.2f} kWh with control vs {lb:.2f} kWh uncontrolled]")
+            logger.info(
+                f"LOSS REDUCTION      : {lb - ld:.2f} kWh ({lpct:.1f}%)  [Zbus model estimate: {ld:.2f} kWh with control vs {lb:.2f} kWh uncontrolled]"
+            )
         elif self._m_sumsq_base > 0.0:
-            lpct = 100.0 * (self._m_sumsq_base - self._m_sumsq_deliv) / self._m_sumsq_base
-            logger.info(f"LOSS REDUCTION      : {lpct:.1f}% est.  [quadratic demand proxy]")
+            lpct = (
+                100.0 * (self._m_sumsq_base - self._m_sumsq_deliv) / self._m_sumsq_base
+            )
+            logger.info(
+                f"LOSS REDUCTION      : {lpct:.1f}% est.  [quadratic demand proxy]"
+            )
         if pre is not None:
-            logger.info(f"min pu w/o control  : {pre:.4f} (measured pre-curtailment, est)  vs {minpu:.4f} controlled")
+            logger.info(
+                f"min pu w/o control  : {pre:.4f} (measured pre-curtailment, est)  vs {minpu:.4f} controlled"
+            )
         else:
-            logger.info("min pu w/o control  : run control_mode=uncontrolled for the exact voltage baseline")
+            logger.info(
+                "min pu w/o control  : run control_mode=uncontrolled for the exact voltage baseline"
+            )
         logger.info("=" * 60)
 
     def run(self):
@@ -349,8 +366,10 @@ class EVCSFederate:
         while granted_time < h.HELICS_TIME_MAXTIME:
             if iteration_state == h.HELICS_ITERATION_RESULT_ITERATING:
                 if not voltage_control:
-                    granted_time, iteration_state = h.helicsFederateRequestTimeIterative(
-                        self.vfed, h.HELICS_TIME_MAXTIME, no_iteration
+                    granted_time, iteration_state = (
+                        h.helicsFederateRequestTimeIterative(
+                            self.vfed, h.HELICS_TIME_MAXTIME, no_iteration
+                        )
                     )
                     continue
                 _, updated = self._read_voltages()
@@ -361,16 +380,18 @@ class EVCSFederate:
                 ev_load_values, ev_load_per_bus = self._apply_curtailment(
                     self._proposed_ev
                 )
-                cmd_list = build_change_commands(
-                    self.evcs_bus, ev_load_values
-                )
+                cmd_list = build_change_commands(self.evcs_bus, ev_load_values)
                 self.pub_change_commands.publish(cmd_list.model_dump_json())
                 self._last_delivered_ev = list(ev_load_values)
                 if self._curtail_iter == 0:
                     _pu = getattr(self, "_all_bus_pu", None)
                     if _pu:
                         _lo = min(_pu.values())
-                        self._m_precurtail_min_pu = _lo if self._m_precurtail_min_pu is None else min(self._m_precurtail_min_pu, _lo)
+                        self._m_precurtail_min_pu = (
+                            _lo
+                            if self._m_precurtail_min_pu is None
+                            else min(self._m_precurtail_min_pu, _lo)
+                        )
                 self._curtail_iter += 1
                 max_delta = max(
                     (abs(a - b) for a, b in zip(ev_load_values, self._prev_curtailed)),
@@ -391,12 +412,16 @@ class EVCSFederate:
                     or self._no_voltage_count >= no_voltage_limit
                 )
                 if done:
-                    granted_time, iteration_state = h.helicsFederateRequestTimeIterative(
-                        self.vfed, h.HELICS_TIME_MAXTIME, no_iteration
+                    granted_time, iteration_state = (
+                        h.helicsFederateRequestTimeIterative(
+                            self.vfed, h.HELICS_TIME_MAXTIME, no_iteration
+                        )
                     )
                 else:
-                    granted_time, iteration_state = h.helicsFederateRequestTimeIterative(
-                        self.vfed, int(granted_time) + 1, iterate_if_needed
+                    granted_time, iteration_state = (
+                        h.helicsFederateRequestTimeIterative(
+                            self.vfed, int(granted_time) + 1, iterate_if_needed
+                        )
                     )
                 continue
 
@@ -553,9 +578,7 @@ class EVCSFederate:
                 else:
                     baseline_ev.append(0.0)
 
-            cmd_list = build_change_commands(
-                self.evcs_bus, ev_load_values
-            )
+            cmd_list = build_change_commands(self.evcs_bus, ev_load_values)
             self.pub_change_commands.publish(cmd_list.model_dump_json())
             self._last_delivered_ev = list(ev_load_values)
             self._last_proposed_ev = baseline_ev
@@ -658,7 +681,9 @@ def run_simulator(broker_config: BrokerConfig):
         logger.info(f"Control mode from config: {control_mode}")
 
     ev_params = generate_ev_parameters(config)
-    ev_params["voltage_sensitivity_scale"] = config.get("voltage_sensitivity_scale", 1.0)
+    ev_params["voltage_sensitivity_scale"] = config.get(
+        "voltage_sensitivity_scale", 1.0
+    )
     logger.info(
         f"Generated EV parameters: {ev_params['num_evs']} EVs across "
         f"{len(ev_params['num_evs_per_station'])} stations"

@@ -137,8 +137,11 @@ class LinearizedNetwork:
         raise ValueError("Unrecognized admittance format")
 
     def build_sensitivity_from_admittance(
-        self, topology, s_base: float = 1e6, diagonal_only: bool = False,
-        sensitivity_scale: float = 1.0
+        self,
+        topology,
+        s_base: float = 1e6,
+        diagonal_only: bool = False,
+        sensitivity_scale: float = 1.0,
     ):
         admittance = topology.admittance
         bvm = topology.base_voltage_magnitudes
@@ -149,9 +152,7 @@ class LinearizedNetwork:
         if n_adm == 0:
             raise ValueError("Empty admittance matrix")
 
-        base_v = np.array(
-            [base_v_by_id.get(bid, 0.0) for bid in adm_ids], dtype=float
-        )
+        base_v = np.array([base_v_by_id.get(bid, 0.0) for bid in adm_ids], dtype=float)
         if np.any(base_v <= 0.0):
             raise ValueError("Missing base voltage for one or more admittance ids")
 
